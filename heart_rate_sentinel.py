@@ -5,26 +5,58 @@ app = Flask(__name__)
 patient_dictionary = dict()
 # DICTIONARY IS STRUCTURED LIKE THIS:
 # {
-#   "patient_id": ["EMAIL", AGE, HR1, HR2, HR3...],
-#   "patient_id2": ["EMAIL", AGE, HR1, HR2, HR3...],
+#   "patient_id": ["AGE", EMAIL, HR1, HR2, HR3...],
+#   "patient_id2": ["AGE", EMAIL, HR1, HR2, HR3...],
 # etc
 
 
 @app.route("/api/new_patient", methods=["POST"])
 def new_patient():
     r = request.get_json()
+    print("Accepting new patient: ")
     print(r)
-    patient_dictionary[r["patient_id"]] = [r["attending_email"], r["user_age"]]
+    patient_dictionary[r["patient_id"]] = [r["user_age"], r["attending_email"]]
     return jsonify(patient_dictionary)
 
 
 @app.route("/api/heart_rate", methods=["POST"])
 def heart_rate():
     r = request.get_json()
+    print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
     patient_dictionary[r["patient_id"]].append(r["heart_rate"])
-    # CURRENT TIME STAMP **************************************************************************
+    # CURRENT TIME STAMP *****************************************************
     return jsonify(patient_dictionary)
+
+
+def determine_patient_type(age):
+    if age <= 2:
+        return "infant"
+    if age <= 15 & age > 2:
+        return "child"
+    if age > 15:
+        return "adult"
+
+
+def is_tac_infant(hr):
+    if hr >= 179:
+        return 'TACHYCARDIC'
+    elif hr < 179:
+        return 'Not tachycardic'
+
+
+def is_tac_child(hr):
+    if hr >= 119:
+        return 'TACHYCARDIC'
+    elif hr < 119:
+        return 'Not tachycardic'
+
+
+def is_tac_adult(hr):
+    if hr >= 100:
+        return 'TACHYCARDIC'
+    elif hr < 100:
+        return 'Not tachycardic'
 
 
 @app.route("/api/status/<patient_id>", methods=["GET"])
@@ -32,20 +64,43 @@ def status(patient_id):
     # should return whether this patient is currently tachycardic based
     # on the previously available heart rate, and should also return
     # the timestamp of the most recent heart rate.
-    return
+    # CURRENT TIME STAMP *********************************************
+    print("Testing if patient is tachycardic...")
+    patient_type = determine_patient_type(patient_dictionary[patient_id][0])
+    if patient_type == "infant":
+        output = is_tac_infant(patient_dictionary[patient_id][-1])
+    elif patient_type == "child":
+        output = is_tac_child(patient_dictionary[patient_id][-1])
+    elif patient_type == "adult":
+        output = is_tac_adult(patient_dictionary[patient_id][-1])
+    return jsonify(output)
+
+
+def all_heart_rates(patient_id):
+    output = patient_dictionary[patient_id][2:]
+    return output
 
 
 @app.route("/api/heart_rate/<patient_id>", methods=["GET"])
 def prev_heart_rates(patient_id):
     # return all the previous heart rate measurements for that patient
-    output = patient_dictionary[patient_id][2:]
-    return jsonify(output)
+    print("Output all heart rates for patient {}".format(patient_id))
+    heart_rates = all_heart_rates(patient_id)
+    return jsonify(heart_rates)
+
+
+def average(input_list):
+    output = sum(input_list)/len(input_list)
+    return output
 
 
 @app.route("/api/heart_rate/average/<patient_id>", methods=["GET"])
 def average_heart_rates(patient_id):
-    # return the patients's average heart rate over all measurements you have stored for this user.
-    return
+    # return the patients's average heart rate over all measurements
+    print("Output average heart rate for patient {}".format(patient_id))
+    heart_rates = all_heart_rates(patient_id)
+    avg_heart_rate = round(average(heart_rates), 2)
+    return jsonify(avg_heart_rate)
 
 
 @app.route("/api/heart_rate/interval_average", methods=["POST"])
@@ -65,17 +120,3 @@ def interval_average():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1")
-'''
-test code:
-import requests
-r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"one","attending_email":"blah","user_age":10})
-r.text
-r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"two","attending_email":"BLAH","user_age":20})
-r.text
-r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"two","heart_rate":100})
-r.text
-r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"two","heart_rate":200})
-r.text
-R = requests.get("http://127.0.0.1:5000/api/heart_rate/two")
-R.text
-'''
