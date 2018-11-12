@@ -1,0 +1,17 @@
+test code:
+
+import requests
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah","user_age":30})
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"2","attending_email":"BLAH","user_age":20})
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"1","heart_rate":75})
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"2","heart_rate":80})
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"2","heart_rate":150})
+r.text
+R = requests.get("http://127.0.0.1:5000/api/heart_rate/2")
+R.text
+avg = requests.get("http://127.0.0.1:5000/api/heart_rate/average/2")
+avg.text
+not_tac = requests.get("http://127.0.0.1:5000/api/status/1")
+not_tac.text
+tac = requests.get("http://127.0.0.1:5000/api/status/2")
+tac.text
