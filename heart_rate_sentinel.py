@@ -6,10 +6,18 @@ app = Flask(__name__)
 patient_dictionary = dict()
 # DICTIONARY IS STRUCTURED LIKE THIS:
 # {
-#   "patient_id": ["AGE", EMAIL, HR1, HR2, HR3...],
-#   "patient_id_HR_times": [datetime1, datetime2 ...]
-#   "patient_id2": ["AGE", EMAIL, HR1, HR2, HR3...],
-#   "patient_id2_HR_times": [datetime1, datetime2 ...]
+#   "patient_id": {
+#               "AGE":age
+#               "EMAIL":email
+#               "Heart_rates": [HR1, HR2, HR3...]
+#               "HR Times":[datetime1, datetime2 ...]
+#               }
+#   "patient_id2": {
+#               "AGE":age
+#               "EMAIL":email
+#               "Heart_rates": [HR1, HR2, HR3...]
+#               "HR Times":[datetime1, datetime2 ...]
+#               }
 # etc
 
 
@@ -18,8 +26,13 @@ def new_patient():
     r = request.get_json()
     print("Accepting new patient: ")
     print(r)
-    patient_dictionary[r["patient_id"]] = [r["user_age"], r["attending_email"]]
-    patient_dictionary[r["patient_id"] + "_HR_times"] = []
+    patient_dictionary[r["patient_id"]] = \
+        {
+            "AGE": r["user_age"],
+            "EMAIL": r["attending_email"],
+            "HEART_RATES": [],
+            "HR_TIMES": []
+        }
     return jsonify(patient_dictionary)
 
 
@@ -28,9 +41,9 @@ def heart_rate():
     r = request.get_json()
     print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
-    patient_dictionary[r["patient_id"]].append(r["heart_rate"])
+    patient_dictionary[r["patient_id"]]["HEART_RATES"].append(r["heart_rate"])
     time_stamp = datetime.now()
-    patient_dictionary[r["patient_id"]+"_HR_times"].append(time_stamp)
+    patient_dictionary[r["patient_id"]]["HR_TIMES"].append(time_stamp)
     return jsonify(patient_dictionary)
 
 
@@ -71,20 +84,20 @@ def status(patient_id):
     # the timestamp of the most recent heart rate.
     # CURRENT TIME STAMP *********************************************
     print("Testing if patient is tachycardic...")
-    patient_type = determine_patient_type(patient_dictionary[patient_id][0])
+    patient_type = determine_patient_type(patient_dictionary[patient_id]["AGE"])
     if patient_type == "infant":
-        output = is_tac_infant(patient_dictionary[patient_id][-1])
+        output = is_tac_infant(patient_dictionary[patient_id]["HEART_RATES"][-1])
     elif patient_type == "child":
-        output = is_tac_child(patient_dictionary[patient_id][-1])
+        output = is_tac_child(patient_dictionary[patient_id]["HEART_RATES"][-1])
     elif patient_type == "adult":
-        output = is_tac_adult(patient_dictionary[patient_id][-1])
+        output = is_tac_adult(patient_dictionary[patient_id]["HEART_RATES"][-1])
     output = output + ". Time of last measurement: " \
-             + str(patient_dictionary[patient_id+"_HR_times"][-1])
+                    + str(patient_dictionary[patient_id]["HR_TIMES"][-1])
     return jsonify(output)
 
 
 def all_heart_rates(patient_id):
-    output = patient_dictionary[patient_id][2:]
+    output = patient_dictionary[patient_id]["HEART_RATES"]
     return output
 
 
