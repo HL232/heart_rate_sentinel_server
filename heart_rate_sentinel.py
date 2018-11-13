@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from datetime import datetime, timedelta
 app = Flask(__name__)
 
 
@@ -6,7 +7,9 @@ patient_dictionary = dict()
 # DICTIONARY IS STRUCTURED LIKE THIS:
 # {
 #   "patient_id": ["AGE", EMAIL, HR1, HR2, HR3...],
+#   "patient_id_HR_times": [datetime1, datetime2 ...]
 #   "patient_id2": ["AGE", EMAIL, HR1, HR2, HR3...],
+#   "patient_id2_HR_times": [datetime1, datetime2 ...]
 # etc
 
 
@@ -16,6 +19,7 @@ def new_patient():
     print("Accepting new patient: ")
     print(r)
     patient_dictionary[r["patient_id"]] = [r["user_age"], r["attending_email"]]
+    patient_dictionary[r["patient_id"] + "_HR_times"] = []
     return jsonify(patient_dictionary)
 
 
@@ -25,7 +29,8 @@ def heart_rate():
     print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
     patient_dictionary[r["patient_id"]].append(r["heart_rate"])
-    # CURRENT TIME STAMP *****************************************************
+    time_stamp = datetime.now()
+    patient_dictionary[r["patient_id"]+"_HR_times"].append(time_stamp)
     return jsonify(patient_dictionary)
 
 
@@ -73,6 +78,8 @@ def status(patient_id):
         output = is_tac_child(patient_dictionary[patient_id][-1])
     elif patient_type == "adult":
         output = is_tac_adult(patient_dictionary[patient_id][-1])
+    output = output + ". Time of last measurement: " \
+             + str(patient_dictionary[patient_id+"_HR_times"][-1])
     return jsonify(output)
 
 
