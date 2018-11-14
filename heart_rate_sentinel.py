@@ -48,6 +48,7 @@ def heart_rate():
 
 
 def determine_patient_type(age):
+    # Change to be more specfic for each age ********************************
     if age <= 2:
         return "infant"
     if age <= 15 & age > 2:
@@ -82,7 +83,6 @@ def status(patient_id):
     # should return whether this patient is currently tachycardic based
     # on the previously available heart rate, and should also return
     # the timestamp of the most recent heart rate.
-    # CURRENT TIME STAMP *********************************************
     print("Testing if patient is tachycardic...")
     patient_type = determine_patient_type(patient_dictionary[patient_id]["AGE"])
     if patient_type == "infant":
@@ -125,18 +125,22 @@ def average_heart_rates(patient_id):
 
 @app.route("/api/heart_rate/interval_average", methods=["POST"])
 def interval_average():
-    # return jsonify(output)
-    # input is something like:
-    # r = requests.post("http://127.0.0.1:5000/api/new_patient",
-    # json = {
-    # "patient_id": "1",
-    # "heart_rate_average_since": "2018-03-09 11:00:36.372339"  # date string
-    # })
     r = request.get_json()
+    print('Determining average heart rate after time interval:')
     print(r)
     # Heart_rate_average since the given time
-    return jsonify(r)
+    time_interval = r["heart_rate_average_since"]
+    datetime_object_time_interval = \
+        datetime.strptime(time_interval, '%Y-%m-%d %H:%M:%S.%f')
+    list_count = 0
+    for time in  patient_dictionary[r["patient_id"]]["HR_TIMES"]:
+        if datetime_object_time_interval < time:
+            list_count = list_count + 1
+    list_of_HR = patient_dictionary[r["patient_id"]]["HEART_RATES"][-list_count:]
+    avg_interval_heart_rate = round(average(list_of_HR), 2)
+    return jsonify(avg_interval_heart_rate)
 
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1")
+    # Deploy on VCM later and include the VCM address
