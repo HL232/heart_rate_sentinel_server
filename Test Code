@@ -18,3 +18,5 @@ tac.text
 int_avg = requests.post("http://127.0.0.1:5000/api/heart_rate/interval_average", \
     json={"patient_id":"2","heart_rate_average_since": "2018-11-14 13:07:39.569444"})
 int_avg.text
+dict = requests.get("http://127.0.0.1:5000/api/dictionary")
+dict.text

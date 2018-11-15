@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime
 app = Flask(__name__)
 
 
@@ -11,12 +11,14 @@ patient_dictionary = dict()
 #               "EMAIL":email
 #               "Heart_rates": [HR1, HR2, HR3...]
 #               "HR Times":[datetime1, datetime2 ...]
+#               "HEART_RATE_AVERAGE_SINCE":[datetime]
 #               }
 #   "patient_id2": {
 #               "AGE":age
 #               "EMAIL":email
 #               "Heart_rates": [HR1, HR2, HR3...]
 #               "HR Times":[datetime1, datetime2 ...]
+#               "HEART_RATE_AVERAGE_SINCE":[datetime]
 #               }
 # etc
 
@@ -31,7 +33,8 @@ def new_patient():
             "AGE": r["user_age"],
             "EMAIL": r["attending_email"],
             "HEART_RATES": [],
-            "HR_TIMES": []
+            "HR_TIMES": [],
+            "HEART_RATE_AVERAGE_SINCE":[]
         }
     return jsonify(patient_dictionary)
 
@@ -132,6 +135,9 @@ def interval_average():
     time_interval = r["heart_rate_average_since"]
     datetime_object_time_interval = \
         datetime.strptime(time_interval, '%Y-%m-%d %H:%M:%S.%f')
+    patient_dictionary[r["patient_id"]]["HEART_RATE_AVERAGE_SINCE"]\
+        = datetime_object_time_interval
+
     list_count = 0
     for time in  patient_dictionary[r["patient_id"]]["HR_TIMES"]:
         if datetime_object_time_interval < time:
@@ -139,6 +145,11 @@ def interval_average():
     list_of_HR = patient_dictionary[r["patient_id"]]["HEART_RATES"][-list_count:]
     avg_interval_heart_rate = round(average(list_of_HR), 2)
     return jsonify(avg_interval_heart_rate)
+
+
+@app.route("/api/dictionary/", methods=["GET"])
+def dictionary():
+    return jsonify(patient_dictionary)
 
 
 if __name__ == "__main__":
