@@ -41,4 +41,5 @@ __pycache__
 _static
 _templates
 _build
-
+"sendgrid.env"
+"sendgrid_api_key.txt"

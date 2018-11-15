@@ -14,3 +14,4 @@ pytest-cov
 pytest-pudb
 Flask
 gunicorn
+sendgrid
