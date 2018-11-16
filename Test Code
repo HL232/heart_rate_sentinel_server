@@ -1,4 +1,4 @@
-test code:
+#test code:
 
 import requests
 r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah","user_age":30})
@@ -20,3 +20,7 @@ int_avg = requests.post("http://127.0.0.1:5000/api/heart_rate/interval_average",
 int_avg.text
 dict = requests.get("http://127.0.0.1:5000/api/dictionary")
 dict.text
+
+
+#this should throw an error:
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah"})
