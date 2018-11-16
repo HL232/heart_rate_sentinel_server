@@ -75,19 +75,19 @@ def heart_rate():
 
 
 def age_based_tac(age):
-    if age <= 1:
+    if age < 1:
         return 160
-    elif age <= 2 & age > 1:
+    elif age < 3 & age >= 1:
         return 151
-    elif age <= 4 & age > 3:
+    elif age < 5 & age >= 3:
         return 137
-    elif age <= 7 & age > 5:
+    elif age < 8 & age >= 5:
         return 133
-    elif age <= 11 & age > 8:
+    elif age < 12 & age >= 8:
         return 130
-    elif age <= 15 & age > 12:
+    elif age < 15 & age >= 12:
         return 119
-    elif age > 15:
+    elif age >= 15:
         return 100
 
 
@@ -151,7 +151,7 @@ def add_time_interval(patient, time_interval):
     return datetime_object_time_interval
 
 
-def avg_since_time(patient, date_time):
+def hr_since_time(patient, date_time):
     list_count = 0
     for time in patient_dictionary[patient]["HR_TIMES"]:
         if date_time < time:
@@ -167,7 +167,7 @@ def interval_average():
     print(r)
     # Heart_rate_average since the given time
     added_time = add_time_interval(r["patient_id"], r["heart_rate_average_since"])
-    list_of_hr = avg_since_time(r["patient_id"], added_time)
+    list_of_hr = hr_since_time(r["patient_id"], added_time)
     avg_interval_heart_rate = average(list_of_hr)
     output = "The average heart rate since {}".format(str(added_time)) \
              + " is {} bpm".format(avg_interval_heart_rate)
