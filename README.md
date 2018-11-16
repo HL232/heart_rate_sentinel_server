@@ -1,4 +1,57 @@
 # Heart Rate Sentinel Server
+
+Author: Howard Li
+
+Version: 1.0.0
+
+License: GNU General Public License v3.0
+
+## Introduction
+This repo is for the heart_rate_sentinel_server project. It is basically a remote server that takes heart rate measurements from hypothetical patients and records the data. It outputs if the patient becomes tachycardic or not and emails the doctor in charge of the patient. 
+
+## What's included in this repo
+ + `docs, Makefile, conf.py, index.rst, make.bat` - these files are used to produce auto generated sphinx documentation
+ + `.gitignore` - files that Git should not upload to github
+ + `.travis.yml` - Travis CI/CD setup
+ + `README.md` - this file is the readme
+ + `Test Code` - This is a text document that I used to store some test code. You can ignore this for grading purposes. I have it here in case I need it in the future again.
+ + `example_client.py` - This is a premade example client python program. Run this program for a basic walkthrough of how my heart rate sentinel program works. This program is already pre-coded to reference the VCM running my server. It is a program that is BEST CASE SCENERIO.
+ + `heart_rate_sentinel.py` - This python program is the actual setinel program that is running on my VCM. 
+ + `requirements.txt` - Requirements for this program to set up your virtual environment
+ + `test_heart_rate_sentinel.py` - This is the unit tests for the sentinel.
+ 
+## How to run this project
+ 1. Cllone this repo or download the contents
+ 2. Run `example_client.py` - This is a premade client program. It will walk through the POST and GET commands and briefly explain what's happening in the background. It is already connected to my VCM server
+ 3. You can also hit my server with your own GET and POST commands. **My server is running at http://vcm-7254.vm.duke.edu:5000/BLAH BLAH BLAH**
+ 4. If anything in the server breaks, and you don't want to email me to restart the server, you can also run the program locally. Go into the `heart_rate_sentinel.py` program and go to the last line. Uncomment the `app.run(host="127.0.0.1")` line and run the sentinel locally instead of using the 0.0.0.0 host. 
+ 5. My server should handle all the POST and GET requests that are described in the original assignment below. 
+
+## Other Notes and Future Works
+ + This sentinel server is not running on a MongoDB database. It is using a locally created dictionary to store patient information. Therefore, every time you restart `heart_rate_sentinel.py`, the dictionary resets. 
+ + There is an extra GET route. I added `GET /api/dictionary/` This allows you to see the dictionary database of all the patients. I used this for development purposes but decided it might be useful for debugging so I left it in. That's a major privacy concern if this was a real server though cause anyone would be able to see all patient data...
+ + POST input validation is poorly handled. Right now I am only throwing and catching random exceptions and then returning error messages to the client. This was to prevent errors from crashing the server. Only a few validation cases are handled:
+   - POST /api/new_patient validations:
+     1. That patient_id, user_age, and attending_email are present
+     2. The values are string, int, string respectively
+     3. That the email has a @ symbol in it. 
+   - POST /api/heart_rate validations:
+     1. That patient_id, heart_rate_ are present
+     2. That heart_rate is an integer
+     3. That the patient_id exists in the database
+   - POST /api/heart_rate/interval_average validations:
+     1. That patient_id, interval_average are present
+     2. That the patient exists in the database
+     3. The time input is correctly formatted
+   - **There is a strong likelihood that errors outside of these validations will not work, and worst case crash the server**
+ + My first Sendgrid account was suspended because I exposed the API on Github. I made a second account, hopefully that one doesn't get suspended. `example_client.py` is hardcoded to send emails to my personal email, but this program *should* be able to send emails to the "doctor's email" whenever you POST a new patient with new info.
+ + Travis currently shows up as failing. But this is because I have the `sendgrid_api_key` file locally for the server only, not on Github. Otherwise all the unit tests should pass if you run `pytest -v` command in Anaconda or your terminal.
+ 
+ 
+ 
+
+# Original Assignment
+
 This assignment will have you build a simple centralized heart rate sentinel server. This server will be built to receive POST requests from mock patient heart rate monitors that contain patient heart rate information over time. If a patient exhibits a tachycardic heart rate, the physician should receive an email warning them. So if a new heart rate is received for a patient that is tachycardic, the email should be sent out at that time. This calculation should be based on age (more info [here](https://en.wikipedia.org/wiki/Tachycardia)). This can be sent using the free [Sendgrid API](https://sendgrid.com/) (there is also a [Sendgrid python package](https://github.com/sendgrid/sendgrid-python) that wraps the API).
 
 Name your repository: `heart_rate_sentinel_server`. Note: for this assignment, you do not have to use a database. You can choose to store patient information using in memory data structures like python lists and dictionaries. 
