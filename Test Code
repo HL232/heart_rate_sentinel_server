@@ -1,4 +1,4 @@
-#test code:
+# THIS TEST CODE WAS USED DURING DEVELOPMENT. IT USES 127.0.0.1:5000 SO IT WILL NOT WORK ON SERVER
 
 import requests
 r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"howard12067@gmail.com","user_age":30})
