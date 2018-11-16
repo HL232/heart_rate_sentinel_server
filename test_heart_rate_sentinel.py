@@ -13,6 +13,30 @@ def test_add_new_patient():
     assert patient_dictionary['A'] == expected
 
 
+def test_validate_new_patient1():
+    r = {"patient_id": "1", "attending_email": "blah"}
+    with pytest.raises(TypeError):
+        validate_new_patient(r)
+
+
+def test_validate_new_patient2():
+    r = {"patient_id": 1, "attending_email": "blah", "user_age": 30}
+    with pytest.raises(ValueError):
+        validate_new_patient(r)
+
+
+def test_validate_new_patient3():
+    r = {"patient_id": "1", "attending_email": "blah", "user_age": 30}
+    with pytest.raises(NameError):
+        validate_new_patient(r)
+
+
+def test_validate_heart_rate1():
+    r = {"heart_rate": 75}
+    with pytest.raises(TypeError):
+        validate_new_patient(r)
+
+
 def test_add_heart_rate():
     add_new_patient('A', 10, 'blah')
     add_heart_rate('A', 100)
@@ -65,6 +89,12 @@ def test_average():
     a = average([1, 2, 4])
     b = 2.33
     assert a == b
+
+
+def test_validate_interval_average1():
+    r = {"patient_id": "2"}
+    with pytest.raises(TypeError):
+        validate_new_patient(r)
 
 
 def test_add_time_interval():
