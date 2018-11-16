@@ -23,7 +23,7 @@ This repo is for the heart_rate_sentinel_server project. It is basically a remot
 ## How to run this project
  1. Cllone this repo or download the contents
  2. Run `example_client.py` - This is a premade client program. It will walk through the POST and GET commands and briefly explain what's happening in the background. It is already connected to my VCM server
- 3. You can also hit my server with your own GET and POST commands. **My server is running at http://vcm-7254.vm.duke.edu:5000/BLAH BLAH BLAH**
+ 3. You can also hit my server with your own GET and POST commands. **My server is running at http://vcm-7254.vm.duke.edu:5000/ BLAH BLAH BLAH**
  4. If anything in the server breaks, and you don't want to email me to restart the server, you can also run the program locally. Go into the `heart_rate_sentinel.py` program and go to the last line. Uncomment the `app.run(host="127.0.0.1")` line and run the sentinel locally instead of using the 0.0.0.0 host. 
  5. My server should handle all the POST and GET requests that are described in the original assignment below. 
 
