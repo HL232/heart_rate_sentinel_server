@@ -9,24 +9,29 @@ print("First I am adding Patient 1 and Patient 2 using POST/api/new_patient")
 input("PRESS ENTER TO CONTINUE.")
 r = requests.post("http://127.0.0.1:5000/api/new_patient",
                   json={"patient_id": "1",
-                        "attending_email": "blah",
+                        "attending_email": "howard12067@gmail.com",
                         "user_age": 30})
 r = requests.post("http://127.0.0.1:5000/api/new_patient",
                   json={"patient_id": "2",
-                        "attending_email": "BLAH",
+                        "attending_email": "howard12067@gmail.com",
                         "user_age": 20})
 
 print("Done. I use the BLAH.text command to see them")
 input("PRESS ENTER TO CONTINUE.")
 print(r.text)
 
-print("Next I add 1 heart beat to Patient 1, and 2 to Patient 2."
+print("Next I add a heart beat to Patient 1, and Patient 2."
       "This is done with POST /api/heart_rate")
 input("PRESS ENTER TO CONTINUE.")
 r = requests.post("http://127.0.0.1:5000/api/heart_rate",
                   json={"patient_id": "1", "heart_rate": 75})
 r = requests.post("http://127.0.0.1:5000/api/heart_rate",
                   json={"patient_id": "2", "heart_rate": 80})
+
+print("Next I will add a tachycardic heart rate to Patient 2. \n"
+      "I will receive an email from the server \n"
+      "(sent to howard's personal email)")
+input("PRESS ENTER TO CONTINUE.")
 r = requests.post("http://127.0.0.1:5000/api/heart_rate",
                   json={"patient_id": "2", "heart_rate": 150})
 

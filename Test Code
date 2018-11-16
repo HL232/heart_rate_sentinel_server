@@ -1,8 +1,8 @@
 #test code:
 
 import requests
-r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah","user_age":30})
-r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"2","attending_email":"BLAH","user_age":20})
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"howard12067@gmail.com","user_age":30})
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"2","attending_email":"howard12067@gmail.com","user_age":20})
 r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"1","heart_rate":75})
 r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"2","heart_rate":80})
 r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"2","heart_rate":150})
@@ -21,6 +21,33 @@ int_avg.text
 dict = requests.get("http://127.0.0.1:5000/api/dictionary")
 dict.text
 
-
-#this should throw an error:
+### Validate new patient posts**********************************************************************************
+#this should throw an error that data is missing:
 r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah"})
+r.text
+
+#this should throw an error that patient ID needs to be a string:
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":1,"attending_email":"blah","user_age":30})
+r.text
+
+#this should throw an error that email needs to be a string:
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":2,"user_age":30})
+r.text
+
+#this should throw an error that age needs to be a int:
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah","user_age":30.4})
+r.text
+
+#this should throw an error that email is invalid:
+r = requests.post("http://127.0.0.1:5000/api/new_patient", json={"patient_id":"1","attending_email":"blah","user_age":30})
+r.text
+
+### Validate new heart rate posts**********************************************************************************
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"heart_rate":75})
+r.text
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"1","heart_rate":'75'})
+r.text
+r = requests.post("http://127.0.0.1:5000/api/heart_rate", json = {"patient_id":"3","heart_rate":75})
+r.text
+
+

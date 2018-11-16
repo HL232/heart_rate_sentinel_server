@@ -43,3 +43,4 @@ _templates
 _build
 "sendgrid.env"
 "sendgrid_api_key"
+"sendgrid_api_key.py"
