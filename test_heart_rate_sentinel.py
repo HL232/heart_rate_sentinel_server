@@ -62,7 +62,7 @@ def test_all_heart_rates():
 
 
 def test_average():
-    a = average([1,2,4])
+    a = average([1, 2, 4])
     b = 2.33
     assert a == b
 
@@ -70,7 +70,8 @@ def test_average():
 def test_add_time_interval():
     add_new_patient('A', 10, 'blah')
     a = add_time_interval('A', "2018-11-14 13:07:39.569444")
-    b = datetime.strptime("2018-11-14 13:07:39.569444", '%Y-%m-%d %H:%M:%S.%f')
+    b = datetime.strptime("2018-11-14 13:07:39.569444",
+                          '%Y-%m-%d %H:%M:%S.%f')
     assert a == b
 
 
@@ -78,7 +79,8 @@ def test_hr_since_time():
     add_new_patient('A', 10, 'blah')
     add_heart_rate('A', 5)
     add_heart_rate('A', 10)
-    time = datetime.strptime("2018-11-14 13:07:39.569444", '%Y-%m-%d %H:%M:%S.%f')
-    a = hr_since_time('A',time)
-    b = [5,10]
+    time = datetime.strptime("2018-11-14 13:07:39.569444",
+                             '%Y-%m-%d %H:%M:%S.%f')
+    a = hr_since_time('A', time)
+    b = [5, 10]
     assert a == b

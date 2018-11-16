@@ -54,7 +54,7 @@ def add_heart_rate(patient, heart_rate):
 
 def email(patient, heart_rate, age):
     if is_tac(heart_rate, age) == 'TACHYCARDIC':
-        return # **************************************I need email here
+        return  # **************************************I need email here
 
 
 def add_timestamp(patient_id):
@@ -69,7 +69,8 @@ def heart_rate():
     print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
     add_heart_rate(r["patient_id"], r["heart_rate"])
-    email(r["patient_id"], r["heart_rate"], patient_dictionary[r["patient_id"]]["AGE"])
+    email(r["patient_id"], r["heart_rate"],
+          patient_dictionary[r["patient_id"]]["AGE"])
     add_timestamp(r["patient_id"])
     return jsonify(patient_dictionary)
 
@@ -77,15 +78,15 @@ def heart_rate():
 def age_based_tac(age):
     if age < 1:
         return 160
-    elif age < 3 & age >= 1:
+    elif (age < 3) & (age >= 1):
         return 151
-    elif age < 5 & age >= 3:
+    elif (age < 5) & (age >= 3):
         return 137
-    elif age < 8 & age >= 5:
+    elif (age < 8) & (age >= 5):
         return 133
-    elif age < 12 & age >= 8:
+    elif (age < 12) & (age >= 8):
         return 130
-    elif age < 15 & age >= 12:
+    elif (age < 15) & (age >= 12):
         return 119
     elif age >= 15:
         return 100
@@ -122,8 +123,8 @@ def prev_heart_rates(patient_id):
     # return all the previous heart rate measurements for that patient
     print("Output all heart rates for patient {}".format(patient_id))
     heart_rates = all_heart_rates(patient_id)
-    output = "The heart rate measurements for Patient {}: ".format(patient_id) \
-             + str(heart_rates)
+    output = "The heart rate measurements " \
+             "for Patient {}: ".format(patient_id) + str(heart_rates)
     return jsonify(output)
 
 
@@ -166,7 +167,8 @@ def interval_average():
     print('Determining average heart rate after time interval:')
     print(r)
     # Heart_rate_average since the given time
-    added_time = add_time_interval(r["patient_id"], r["heart_rate_average_since"])
+    added_time = add_time_interval(r["patient_id"],
+                                   r["heart_rate_average_since"])
     list_of_hr = hr_since_time(r["patient_id"], added_time)
     avg_interval_heart_rate = average(list_of_hr)
     output = "The average heart rate since {}".format(str(added_time)) \
