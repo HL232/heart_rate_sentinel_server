@@ -1,7 +1,10 @@
 from flask import Flask, jsonify, request
 from datetime import datetime
-app = Flask(__name__)
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
 
+app = Flask(__name__)
 
 patient_dictionary = dict()
 # DICTIONARY IS STRUCTURED LIKE THIS:
@@ -23,20 +26,41 @@ patient_dictionary = dict()
 # etc
 
 
+def add_new_patient(patient, age, email):
+    patient_dictionary[patient] = \
+        {
+            "AGE": age,
+            "EMAIL": email,
+            "HEART_RATES": [],
+            "HR_TIMES": [],
+            "HEART_RATE_AVERAGE_SINCE": []
+        }
+    return
+
+
 @app.route("/api/new_patient", methods=["POST"])
 def new_patient():
     r = request.get_json()
     print("Accepting new patient: ")
     print(r)
-    patient_dictionary[r["patient_id"]] = \
-        {
-            "AGE": r["user_age"],
-            "EMAIL": r["attending_email"],
-            "HEART_RATES": [],
-            "HR_TIMES": [],
-            "HEART_RATE_AVERAGE_SINCE":[]
-        }
+    add_new_patient(r["patient_id"], r["user_age"], r["attending_email"])
     return jsonify(patient_dictionary)
+
+
+def add_heart_rate(patient, heart_rate):
+    patient_dictionary[patient]["HEART_RATES"].append(heart_rate)
+    return
+
+
+def email(patient, heart_rate, age):
+    if is_tac(heart_rate, age) == 'TACHYCARDIC':
+        return # **************************************I need email here
+
+
+def add_timestamp(patient_id):
+    time_stamp = datetime.now()
+    patient_dictionary[patient_id]["HR_TIMES"].append(time_stamp)
+    return
 
 
 @app.route("/api/heart_rate", methods=["POST"])
@@ -44,40 +68,33 @@ def heart_rate():
     r = request.get_json()
     print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
-    patient_dictionary[r["patient_id"]]["HEART_RATES"].append(r["heart_rate"])
-    time_stamp = datetime.now()
-    patient_dictionary[r["patient_id"]]["HR_TIMES"].append(time_stamp)
+    add_heart_rate(r["patient_id"], r["heart_rate"])
+    email(r["patient_id"], r["heart_rate"], patient_dictionary[r["patient_id"]]["AGE"])
+    add_timestamp(r["patient_id"])
     return jsonify(patient_dictionary)
 
 
-def determine_patient_type(age):
-    # Change to be more specfic for each age ********************************
-    if age <= 2:
-        return "infant"
-    if age <= 15 & age > 2:
-        return "child"
-    if age > 15:
-        return "adult"
+def age_based_tac(age):
+    if age <= 1:
+        return 160
+    elif age <= 2 & age > 1:
+        return 151
+    elif age <= 4 & age > 3:
+        return 137
+    elif age <= 7 & age > 5:
+        return 133
+    elif age <= 11 & age > 8:
+        return 130
+    elif age <= 15 & age > 12:
+        return 119
+    elif age > 15:
+        return 100
 
 
-def is_tac_infant(hr):
-    if hr >= 179:
+def is_tac(heart_rate, age):
+    if heart_rate >= age_based_tac(age):
         return 'TACHYCARDIC'
-    elif hr < 179:
-        return 'Not tachycardic'
-
-
-def is_tac_child(hr):
-    if hr >= 119:
-        return 'TACHYCARDIC'
-    elif hr < 119:
-        return 'Not tachycardic'
-
-
-def is_tac_adult(hr):
-    if hr >= 100:
-        return 'TACHYCARDIC'
-    elif hr < 100:
+    elif heart_rate < age_based_tac(age):
         return 'Not tachycardic'
 
 
@@ -87,20 +104,16 @@ def status(patient_id):
     # on the previously available heart rate, and should also return
     # the timestamp of the most recent heart rate.
     print("Testing if patient is tachycardic...")
-    patient_type = determine_patient_type(patient_dictionary[patient_id]["AGE"])
-    if patient_type == "infant":
-        output = is_tac_infant(patient_dictionary[patient_id]["HEART_RATES"][-1])
-    elif patient_type == "child":
-        output = is_tac_child(patient_dictionary[patient_id]["HEART_RATES"][-1])
-    elif patient_type == "adult":
-        output = is_tac_adult(patient_dictionary[patient_id]["HEART_RATES"][-1])
-    output = output + ". Time of last measurement: " \
-                    + str(patient_dictionary[patient_id]["HR_TIMES"][-1])
+    output = is_tac(patient_dictionary[patient_id]["HEART_RATES"][-1],
+                    patient_dictionary[patient_id]["AGE"])
+    output = "Patient {} is ".format(patient_id) + output \
+             + ". Time of last measurement: " \
+             + str(patient_dictionary[patient_id]["HR_TIMES"][-1])
     return jsonify(output)
 
 
-def all_heart_rates(patient_id):
-    output = patient_dictionary[patient_id]["HEART_RATES"]
+def all_heart_rates(patient):
+    output = patient_dictionary[patient]["HEART_RATES"]
     return output
 
 
@@ -109,12 +122,14 @@ def prev_heart_rates(patient_id):
     # return all the previous heart rate measurements for that patient
     print("Output all heart rates for patient {}".format(patient_id))
     heart_rates = all_heart_rates(patient_id)
-    return jsonify(heart_rates)
+    output = "The heart rate measurements for Patient {}: ".format(patient_id) \
+             + str(heart_rates)
+    return jsonify(output)
 
 
 def average(input_list):
     output = sum(input_list)/len(input_list)
-    return output
+    return round(output, 2)
 
 
 @app.route("/api/heart_rate/average/<patient_id>", methods=["GET"])
@@ -122,8 +137,27 @@ def average_heart_rates(patient_id):
     # return the patients's average heart rate over all measurements
     print("Output average heart rate for patient {}".format(patient_id))
     heart_rates = all_heart_rates(patient_id)
-    avg_heart_rate = round(average(heart_rates), 2)
-    return jsonify(avg_heart_rate)
+    avg_heart_rate = average(heart_rates)
+    output = "The average heart rate for Patient {} is ".format(patient_id) \
+             + str(avg_heart_rate) + "bpm"
+    return jsonify(output)
+
+
+def add_time_interval(patient, time_interval):
+    datetime_object_time_interval = \
+        datetime.strptime(time_interval, '%Y-%m-%d %H:%M:%S.%f')
+    patient_dictionary[patient]["HEART_RATE_AVERAGE_SINCE"]\
+        = datetime_object_time_interval
+    return datetime_object_time_interval
+
+
+def avg_since_time(patient, date_time):
+    list_count = 0
+    for time in patient_dictionary[patient]["HR_TIMES"]:
+        if date_time < time:
+            list_count = list_count + 1
+    list_of_hr = patient_dictionary[patient]["HEART_RATES"][-list_count:]
+    return list_of_hr
 
 
 @app.route("/api/heart_rate/interval_average", methods=["POST"])
@@ -132,19 +166,12 @@ def interval_average():
     print('Determining average heart rate after time interval:')
     print(r)
     # Heart_rate_average since the given time
-    time_interval = r["heart_rate_average_since"]
-    datetime_object_time_interval = \
-        datetime.strptime(time_interval, '%Y-%m-%d %H:%M:%S.%f')
-    patient_dictionary[r["patient_id"]]["HEART_RATE_AVERAGE_SINCE"]\
-        = datetime_object_time_interval
-
-    list_count = 0
-    for time in  patient_dictionary[r["patient_id"]]["HR_TIMES"]:
-        if datetime_object_time_interval < time:
-            list_count = list_count + 1
-    list_of_HR = patient_dictionary[r["patient_id"]]["HEART_RATES"][-list_count:]
-    avg_interval_heart_rate = round(average(list_of_HR), 2)
-    return jsonify(avg_interval_heart_rate)
+    added_time = add_time_interval(r["patient_id"], r["heart_rate_average_since"])
+    list_of_hr = avg_since_time(r["patient_id"], added_time)
+    avg_interval_heart_rate = average(list_of_hr)
+    output = "The average heart rate since {}".format(str(added_time)) \
+             + " is {} bpm".format(avg_interval_heart_rate)
+    return jsonify(output)
 
 
 @app.route("/api/dictionary/", methods=["GET"])
