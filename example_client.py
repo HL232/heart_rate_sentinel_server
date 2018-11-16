@@ -7,11 +7,11 @@ input("PRESS ENTER TO CONTINUE.")
 
 print("First I am adding Patient 1 and Patient 2 using POST/api/new_patient")
 input("PRESS ENTER TO CONTINUE.")
-r = requests.post("http://127.0.0.1:5000/api/new_patient",
+r = requests.post("http://vcm-7254.vm.duke.edu:5000/api/new_patient",
                   json={"patient_id": "1",
                         "attending_email": "howard12067@gmail.com",
                         "user_age": 30})
-r = requests.post("http://127.0.0.1:5000/api/new_patient",
+r = requests.post("http://vcm-7254.vm.duke.edu:5000/api/new_patient",
                   json={"patient_id": "2",
                         "attending_email": "howard12067@gmail.com",
                         "user_age": 20})
@@ -23,16 +23,16 @@ print(r.text)
 print("Next I add a heart beat to Patient 1, and Patient 2."
       "This is done with POST /api/heart_rate")
 input("PRESS ENTER TO CONTINUE.")
-r = requests.post("http://127.0.0.1:5000/api/heart_rate",
+r = requests.post("http://vcm-7254.vm.duke.edu:5000/api/heart_rate",
                   json={"patient_id": "1", "heart_rate": 75})
-r = requests.post("http://127.0.0.1:5000/api/heart_rate",
+r = requests.post("http://vcm-7254.vm.duke.edu:5000/api/heart_rate",
                   json={"patient_id": "2", "heart_rate": 80})
 
 print("Next I will add a tachycardic heart rate to Patient 2. \n"
       "I will receive an email from the server \n"
       "(sent to howard's personal email)")
 input("PRESS ENTER TO CONTINUE.")
-r = requests.post("http://127.0.0.1:5000/api/heart_rate",
+r = requests.post("http://vcm-7254.vm.duke.edu:5000/api/heart_rate",
                   json={"patient_id": "2", "heart_rate": 150})
 
 print("Done. I use the BLAH.text command to see the updates")
@@ -42,32 +42,32 @@ print(r.text)
 print("I used the GET/api/heart_rate/<patient_id> to see the "
       "heart beats of patient 2")
 input("PRESS ENTER TO CONTINUE.")
-HR = requests.get("http://127.0.0.1:5000/api/heart_rate/2")
+HR = requests.get("http://vcm-7254.vm.duke.edu:5000/api/heart_rate/2")
 print(HR.text)
 
 print("I used the GET/api/heart_rate/average/<patient_id> to see the "
       "average heart beat of patient 2")
 input("PRESS ENTER TO CONTINUE.")
-avg = requests.get("http://127.0.0.1:5000/api/heart_rate/average/2")
+avg = requests.get("http://vcm-7254.vm.duke.edu:5000/api/heart_rate/average/2")
 print(avg.text)
 
 print("I used the GET/api/status/<patient_id> to see that patient 1 "
       "is not tachycardic")
 input("PRESS ENTER TO CONTINUE.")
-not_tac = requests.get("http://127.0.0.1:5000/api/status/1")
+not_tac = requests.get("http://vcm-7254.vm.duke.edu:5000/api/status/1")
 print(not_tac.text)
 
 print("I used the GET/api/status/<patient_id> to see that patient 2 "
       "is tachycardic")
 input("PRESS ENTER TO CONTINUE.")
-tac = requests.get("http://127.0.0.1:5000/api/status/2")
+tac = requests.get("http://vcm-7254.vm.duke.edu:5000/api/status/2")
 print(tac.text)
 
 print("I used the POST/api/heart_rate/interval_average to see the "
       "average heart rates for patient 2 \nsince wednesday 11/14/2018 "
       "So basically all the newly added heart rates")
 input("PRESS ENTER TO CONTINUE.")
-int_avg = requests.post("http://127.0.0.1:5000/api/"
+int_avg = requests.post("http://vcm-7254.vm.duke.edu:5000/api/"
                         "heart_rate/interval_average",
                         json={"patient_id": "2",
                               "heart_rate_average_since":
