@@ -43,9 +43,9 @@ def test_age_based_tac(age, expected):
 
 @pytest.mark.parametrize("heart_rate, age, expected", [
     (100, 30, "TACHYCARDIC"),
-    (75, 30, "Not tachycardic"),
+    (75, 30, "not tachycardic"),
     (135, 8, "TACHYCARDIC"),
-    (100, 8, "Not tachycardic")
+    (100, 8, "not tachycardic")
 ])
 def test_is_tac(heart_rate, age, expected):
     a = is_tac(heart_rate, age)

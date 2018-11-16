@@ -53,9 +53,9 @@ def add_new_patient(patient, age, email):
 
 
 def validate_new_patient(r):
-    #r["patient_id"] needs to be a string
-    #r["user_age"] needs to be an int
-    #r["attending_email"] needs to be a string
+    # r["patient_id"] needs to be a string
+    # r["user_age"] needs to be an int
+    # r["attending_email"] needs to be a string
     if not bool(r.get('patient_id')) \
            & bool(r.get('user_age')) \
            & bool(r.get('attending_email')):
@@ -342,7 +342,7 @@ def interval_average():
       Args:
         {
             "patient_id": "1",
-            "heart_rate_average_since": "2018-03-09 11:00:36.372339" // date string
+            "heart_rate_average_since": "2018-03-09 11:00:36.372339" // date
         }
       Returns:
           Returns statement of the patient's average heart rate on interval
