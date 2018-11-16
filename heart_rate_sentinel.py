@@ -54,20 +54,34 @@ def add_new_patient(patient, age, email):
 
 
 def validate_new_patient(r):
+    """Validates that the client POSTed the correct request for new patient
+    Tests
+    1. That patient_id, user_age, and attending_email are present
+    2. The values are string, int, string respectively
+    3. That the email is kinda valid
+    Raises errors for any issues. These errors are caught by the server
+
+     Args:
+        r: The POST request JSON
+
+     Returns:
+         Returns None
+     """
     # r["patient_id"] needs to be a string
     # r["user_age"] needs to be an int
     # r["attending_email"] needs to be a string
-    if not (bool(r.get('patient_id')) \
-           & bool(r.get('user_age')) \
-           & bool(r.get('attending_email'))):
+    if not (bool(r.get('patient_id'))
+            & bool(r.get('user_age'))
+            & bool(r.get('attending_email'))):
         raise TypeError
-    if (not isinstance(r["patient_id"], str))\
-        or (not isinstance(r["user_age"], int))\
-        or (not isinstance(r["attending_email"], str)):
+    if (not isinstance(r["patient_id"], str)) \
+            or (not isinstance(r["user_age"], int)) \
+            or (not isinstance(r["attending_email"], str)):
         raise ValueError
     if '@' not in r["attending_email"]:
         raise NameError
     return
+
 
 @app.route("/api/new_patient", methods=["POST"])
 def new_patient():
@@ -160,12 +174,24 @@ def add_timestamp(patient_id):
 
 
 def validate_heart_rate(r):
-    if not (bool(r.get('patient_id')) \
-           & bool(r.get('heart_rate'))):
+    """Validates that the client POSTed the correct request
+    Tests
+    1. That patient_id, heart_rate_ are present
+    2. That heart_rate is an integer
+    3. That the patient_id exists in the database
+    Raises errors for any issues. These errors are caught by the server
+
+     Args:
+        r: The POST request JSON
+
+     Returns:
+         Returns None
+     """
+    if not (bool(r.get('patient_id')) & bool(r.get('heart_rate'))):
         raise TypeError
     if not isinstance(r["heart_rate"], int):
         raise ValueError
-    if patient_dictionary.get(r['patient_id']) == None:
+    if patient_dictionary.get(r['patient_id']) is None:
         raise KeyError
     return
 
@@ -182,6 +208,8 @@ def heart_rate():
 
      Returns:
          Returns updated JSON file of dictionary of all current patients
+         Unless an error is detected, in which case the appropriate message
+          is returned
      """
     r = request.get_json()
     try:
@@ -327,6 +355,8 @@ def average_heart_rates(patient_id):
 
      Returns:
          Returns statement of the patient's average heart rate
+         Unless an error is detected, in which case the appropriate message
+          is returned
      """
     print("Output average heart rate for patient {}".format(patient_id))
     heart_rates = all_heart_rates(patient_id)
@@ -376,6 +406,27 @@ def hr_since_time(patient, date_time):
     return list_of_hr
 
 
+def validate_interval_average(r):
+    """Validates that the client POSTed the correct interval avg request
+     Tests
+     1. That patient_id, interval_average are present
+     2. That the patient exists in the database
+     Raises errors for any issues. These errors are caught by the server
+
+      Args:
+         r: The POST request JSON
+
+      Returns:
+          Returns None
+      """
+    if not (bool(r.get('patient_id'))
+            & bool(r.get('heart_rate_average_since'))):
+        raise TypeError
+    if patient_dictionary.get(r['patient_id']) is None:
+        raise KeyError
+    return
+
+
 @app.route("/api/heart_rate/interval_average", methods=["POST"])
 def interval_average():
     """POST method: Tells client the patient's avg heart rate on an interval
@@ -387,13 +438,25 @@ def interval_average():
         }
       Returns:
           Returns statement of the patient's average heart rate on interval
+          Unless an error is detected, in which case the appropriate message
+          is returned
       """
     r = request.get_json()
+    try:
+        validate_interval_average(r)
+    except TypeError:
+        return jsonify('POST missing patient id or heart_rate_interval_average')
+    except KeyError:
+        return jsonify('Patient not found. Please add new patient')
     print('Determining average heart rate after time interval:')
     print(r)
     # Heart_rate_average since the given time
-    added_time = add_time_interval(r["patient_id"],
-                                   r["heart_rate_average_since"])
+    try:
+        added_time = add_time_interval(r["patient_id"],
+                                       r["heart_rate_average_since"])
+    except ValueError:
+        return jsonify('Time interval format incorrect. Should be something like '
+                       '2018-03-09 11:00:36.372339')
     list_of_hr = hr_since_time(r["patient_id"], added_time)
     avg_interval_heart_rate = average(list_of_hr)
     output = "The average heart rate since {}".format(str(added_time)) \
