@@ -3,9 +3,6 @@ scipy
 pandas
 ipython
 jupyter
-matplotlib
-scikit-image
-scikit-learn
 sphinx
 pudb
 pytest
@@ -13,6 +10,5 @@ pytest-pep8
 pytest-cov
 pytest-pudb
 Flask
-gunicorn
 sendgrid
 requests

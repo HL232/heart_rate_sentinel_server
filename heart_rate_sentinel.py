@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from datetime import datetime
 import sendgrid
 import os
+from sendgrid_api_key import SENDGRID_API_KEY
 from sendgrid.helpers.mail import *
 
 app = Flask(__name__)
@@ -56,12 +57,17 @@ def validate_new_patient(r):
     # r["patient_id"] needs to be a string
     # r["user_age"] needs to be an int
     # r["attending_email"] needs to be a string
-    if not bool(r.get('patient_id')) \
+    if not (bool(r.get('patient_id')) \
            & bool(r.get('user_age')) \
-           & bool(r.get('attending_email')):
-        raise TypeError("BLAHHHHHHHHH")
+           & bool(r.get('attending_email'))):
+        raise TypeError
+    if (not isinstance(r["patient_id"], str))\
+        or (not isinstance(r["user_age"], int))\
+        or (not isinstance(r["attending_email"], str)):
+        raise ValueError
+    if '@' not in r["attending_email"]:
+        raise NameError
     return
-
 
 @app.route("/api/new_patient", methods=["POST"])
 def new_patient():
@@ -81,8 +87,12 @@ def new_patient():
     try:
         validate_new_patient(r)
     except TypeError:
-        print('you fucked up')
-        return jsonify(r)
+        return jsonify('POST missing patient id, age, or email')
+    except ValueError:
+        return jsonify('Patient ID needs to be a string, user_age needs '
+                       'to be an integer, email needs to be a string')
+    except NameError:
+        return jsonify('Email needs to be someone@something')
     print("Accepting new patient: ")
     print(r)
     add_new_patient(r["patient_id"], r["user_age"], r["attending_email"])
@@ -110,6 +120,8 @@ def add_heart_rate(patient, heart_rate):
 
 def email(patient, heart_rate, age):
     """Emails the doctor if the patient is tachycardic
+    The email is sent to the email provided in the patient database
+    The subject line tells the doctor which patient is tachycardic
 
     Args:
         patient: (string) ID of patient
@@ -120,7 +132,17 @@ def email(patient, heart_rate, age):
         Returns None
     """
     if is_tac(heart_rate, age) == 'TACHYCARDIC':
-        return  # **************************************I need email here
+        sg = sendgrid.SendGridAPIClient(SENDGRID_API_KEY)
+        from_email = Email("howards_sentinel_server@donotreply.com")
+        doctor_email = patient_dictionary[patient]["EMAIL"]
+        to_email = Email(doctor_email)
+        subject = "Patient {} is Tachycardic!".format(patient)
+        content = Content("text/plain", "Go save your patient")
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
 
 
 def add_timestamp(patient_id):
@@ -134,6 +156,17 @@ def add_timestamp(patient_id):
     """
     time_stamp = datetime.now()
     patient_dictionary[patient_id]["HR_TIMES"].append(time_stamp)
+    return
+
+
+def validate_heart_rate(r):
+    if not (bool(r.get('patient_id')) \
+           & bool(r.get('heart_rate'))):
+        raise TypeError
+    if not isinstance(r["heart_rate"], int):
+        raise ValueError
+    if patient_dictionary.get(r['patient_id']) == None:
+        raise KeyError
     return
 
 
@@ -151,6 +184,14 @@ def heart_rate():
          Returns updated JSON file of dictionary of all current patients
      """
     r = request.get_json()
+    try:
+        validate_heart_rate(r)
+    except TypeError:
+        return jsonify('POST missing patient id or heart_rate')
+    except ValueError:
+        return jsonify('Posted heart_rate must be an integer')
+    except KeyError:
+        return jsonify('Patient not found. Please add new patient')
     print("Adding heart rate to patient: {}".format(r["patient_id"]))
     print(r)
     add_heart_rate(r["patient_id"], r["heart_rate"])
@@ -305,7 +346,7 @@ def add_time_interval(patient, time_interval):
 
      Args:
         patient: the patient's ID
-        interval: the time to record
+        time_interval: the time to record
 
      Returns:
          Returns datetime object of the time
